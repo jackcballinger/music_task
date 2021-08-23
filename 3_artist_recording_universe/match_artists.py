@@ -1,10 +1,15 @@
 from collections import defaultdict
 from itertools import chain
-from pathlib import Path
+
+import logging
 
 import pandas as pd
 
 import musicbrainzngs
+
+logging.basicConfig(level=logging.INFO)
+logging.getLogger('musicbrainzngs').setLevel(logging.WARNING)
+_LOGGER = logging.getLogger(__file__)
 
 # musicbrainzngs auth and setup
 musicbrainzngs.auth("test_application", "xqL4RTKh@7#9P4cG")
@@ -103,7 +108,7 @@ def match_artists(input_artist, input_song):
 def get_matched_artists(input_df):
     matched_artists = pd.DataFrame()
     for i, (input_artist, input_song) in enumerate(zip(input_df['input_artist'], input_df['input_song_name'])):
-        print(i, input_artist, input_song)
+        _LOGGER.info(f"{i+1}/{len(input_df)} - retrieving data for {input_artist}: {input_song}")
         matched_artist, matching_method = match_artists(input_artist, input_song)
         matched_artists = matched_artists.append(
             pd.DataFrame(matched_artist).assign(input_artist=input_artist, input_song=input_song, matching_method=matching_method),
