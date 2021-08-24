@@ -6,8 +6,7 @@ from match_artists import get_matched_artists
 from artist_recordings import get_artist_recordings
 from utils import write_dataframe_to_sql, write_object_to_s3, read_data_from_sql
 
-write_mode = True
-
+write_mode = False
 # read artists to match file
 artists_to_match = pd.read_csv(Path(__file__).parent / 'artists_to_match.csv')
 
@@ -28,3 +27,5 @@ if write_mode:
         'raw',
         'recordings',
         'json')
+
+pass

@@ -35,7 +35,7 @@ def get_artist_recordings(artist_id_df):
     for i, (artist_id, name) in enumerate(zip(artist_id_df['id'], artist_id_df['name'])):
         _LOGGER.info(f"{i+1}/{len(artist_id_df)} - retrieving data for {artist_id}: {name}")
         artist_recordings = artist_recordings.append(
-            browse_artist_recordings(artist_id, includes=['isrcs', 'artist-rels', 'work-rels', 'label-rels'], limit=100),
+            browse_artist_recordings(artist_id, includes=['isrcs', 'artist-rels', 'work-rels', 'label-rels'], limit=100).assign(artist_id=artist_id),
             ignore_index=True
-        ).assign(artist_id=artist_id)
+        )
     return artist_recordings
