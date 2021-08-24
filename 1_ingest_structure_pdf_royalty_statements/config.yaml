@@ -1,0 +1,24 @@
+tables:
+  foreign_tax_summary:
+    read_pdf_config:
+      pages: 3-10
+      n_rows: 4
+    format_pdf_config:
+      normalize_column_names: true
+      drop_last_rows: 1
+      replace_values:
+        replace_config:
+          ',': ''
+      col_types:
+        type_mappings:
+          gross_payable: float
+          tax_rate: float
+          withholding_tax: float
+          net_payable: float
+      fillna:
+        how:
+          territory_name: ffill
+          tax_rate: ffill
+      query:
+        not_query:
+          '~income_type_group.str.contains(r"All\s\(\d{1}\sTypes\)")'
