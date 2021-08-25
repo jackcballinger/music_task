@@ -1,3 +1,4 @@
+import pickle
 from pathlib import Path
 
 import yaml
@@ -18,4 +19,6 @@ for table, table_config in pdf_config['tables'].items():
     pdf_text, pdf_tables = pdf_reader.read_tables()
     pdf_formatter = PDFFormatter(table_config['format_pdf_config'])
     pdf_output_tables[table] = pdf_formatter.format_pdf_tables(pdf_tables, pdf_text)
-pass
+
+with open('pdf_output.pkl', 'wb') as f:
+    pickle.dump(pdf_output_tables, f, protocol=pickle.HIGHEST_PROTOCOL)
