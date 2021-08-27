@@ -1,0 +1,78 @@
+tables:
+  foreign_tax_summary:
+    read_pdf_config:
+      pages: 3-10
+      n_rows: 4
+    format_pdf_config:
+      normalize_column_names: true
+      drop_last_rows: 1
+      replace_values:
+        replace_config:
+          ',': ''
+      col_types:
+        type_mappings:
+          gross_payable: float
+          tax_rate: float
+          withholding_tax: float
+          net_payable: float
+      fillna:
+        how:
+          territory_name: ffill
+          tax_rate: ffill
+      query:
+        query_string:
+          '~income_type_group.str.contains(r"All\s\(\d{1}\sTypes\)")'
+  income_type_group_summary:
+    read_pdf_config:
+      pages: 11
+      n_rows: 4
+    format_pdf_config:
+      normalize_column_names: true
+      replace_values:
+        replace_config:     
+          ',': ''
+      drop_last_rows: 1
+      col_types:
+        type_mappings:
+          gross_payable: float
+          withholding_tax: float
+          net_payable: float
+  scope_summary:
+    read_pdf_config:
+      pages: 12
+      n_rows: 4
+    format_pdf_config:
+      normalize_column_names: true
+      replace_values:
+        replace_config:     
+          ',': ''
+      drop_last_rows: 1
+      col_types:
+        type_mappings:
+          gross_payable: float
+          withholding_tax: float
+          net_payable: float                     
+  music_royalties:
+    read_pdf_config:
+      pages: 13-1090
+      n_rows:
+        first_page: 7
+        other_pages: 5
+    format_pdf_config:
+      extract_track_titles: true
+      normalize_column_names: true
+      query:
+        query_string:
+          '~units.isna()'       
+      replace_values:
+        replace_config:
+          '@': ''     
+          ',': ''
+      col_types:
+        type_mappings:
+          statement_id: int
+          units: int
+          amount_received: float
+          royalty_rate: float
+          amount_paid: float
+      add_song_titles: True      
