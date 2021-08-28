@@ -42,6 +42,6 @@ def format_works(input_works):
     return {
         'DimWork': works_df[['id','type','title','language','iswc','disambiguation']].drop_duplicates().reset_index(drop=True),
         'DimWorkCreator': work_creator_role_mapping,
-        'WorkAttributeMapping': work_attribute_mapping,
-        'WorkCreatorMapping': work_creator_mapping
+        'MappingWorkAttribute': work_attribute_mapping,
+        'MappingWorkCreator': work_creator_mapping
     }

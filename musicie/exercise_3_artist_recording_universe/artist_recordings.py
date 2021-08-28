@@ -82,9 +82,9 @@ def format_artist_recordings(input_df):
         'DimLabel': label_metadata,
         'DimLabelType': label_type_mapping,
         'DimRecordCreator': record_creator_role_mapping,
-        'RecordIsrcMapping': input_df[['id','isrc-list']].dropna().explode('isrc-list').reset_index(drop=True).rename(columns={'isrc-list':'isrc.value'}),
-        'RecordWorkMapping': record_work_mapping,
-        'RecordArtistMapping': record_artist_mapping,
-        'RecordCreatorMapping': record_creator_mapping,
-        'RecordLabelMapping': record_label_mapping
+        'MappingRecordIsrc': input_df[['id','isrc-list']].dropna().explode('isrc-list').reset_index(drop=True).rename(columns={'isrc-list':'isrc.value'}),
+        'MappingRecordWork': record_work_mapping,
+        'MappingRecordArtist': record_artist_mapping,
+        'MappingRecordCreator': record_creator_mapping,
+        'MappingRecordLabel': record_label_mapping
     }

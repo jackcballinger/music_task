@@ -8,13 +8,13 @@ _LOGGER = logging.getLogger(__file__)
 
 class PDFFormatter:
     def __init__(self, config):
-        self._config = config
-        self._func_list = [FUNC_DICT[k] for k in self._config if k != 'add_song_titles']
+        self._config = config['tables']
+        self._func_list = {table: [FUNC_DICT[k] for k in functions if k != 'add_song_titles'] for table, functions in self._config.items()}
 
-    def format_pdf_tables(self, input_dfs: list, input_text: dict):
+    def format_pdf_tables(self, table_name:str, input_dfs: list, input_text: dict):
         formatted_df = pd.concat(input_dfs, ignore_index=True)
         _LOGGER.info('formatting pdf tables')
-        for func, args in zip(self._func_list, self._config.values()):
+        for func, args in zip(self._func_list[table_name], self._config[table_name].values()):
             if isinstance(args, bool):
                 formatted_df = func(formatted_df)
             elif isinstance(args, (str, int, float)):
@@ -22,6 +22,7 @@ class PDFFormatter:
             elif isinstance(args, dict):
                 formatted_df = func(formatted_df, **args)
         return {
+            'table_name': table_name,
             'df': formatted_df.reset_index(drop=True),
             'metadata': input_text
         }

@@ -8,6 +8,9 @@ import pandas as pd
 
 import musicbrainzngs
 
+logging.basicConfig(level=logging.INFO)
+_LOGGER = logging.getLogger(__file__)
+
 # musicbrainzngs auth and setup
 musicbrainzngs.auth("test_application", "xqL4RTKh@7#9P4cG")
 musicbrainzngs.set_useragent("test_application", "0.1", "http://example.com/music")
@@ -140,10 +143,10 @@ def format_artists(input_df):
     return {
         'DimArtist': pd.concat([input_df[['id','type','name','country','disambiguation','gender']], pd.json_normalize(input_df['life-span'])], axis=1),
         'DimArea': area_metadata,
-        'ArtistAreaMapping': artist_area_mapping,
-        'ArtistAliasMapping': artist_alias_mapping,
-        'ArtistIsniMapping': input_df[['id','isni-list']].explode('isni-list').reset_index(drop=True).rename(columns={'isni-list':'isni.value'}),
-        'ArtistIpiMapping': input_df[['id','ipi-list']].explode('ipi-list').reset_index(drop=True).rename(columns={'ipi-list':'ipi.value'}),
-        'InputtrackInputartistMapping': input_df[['input_song','input_artist','name','id']].rename(columns={'input_song':'track', 'input_artist': 'artist'})
+        'MappingArtistArea': artist_area_mapping,
+        'MappingArtistAlias': artist_alias_mapping,
+        'MappingArtistIsni': input_df[['id','isni-list']].explode('isni-list').reset_index(drop=True).rename(columns={'isni-list':'isni.value'}),
+        'MappingArtistIpi': input_df[['id','ipi-list']].explode('ipi-list').reset_index(drop=True).rename(columns={'ipi-list':'ipi.value'}),
+        'MappingInputtrackInputartist': input_df[['input_song','input_artist','name','id']].rename(columns={'input_song':'track', 'input_artist': 'artist'})
     }
 

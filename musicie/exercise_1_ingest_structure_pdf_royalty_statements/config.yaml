@@ -1,0 +1,77 @@
+wc_music_corp:
+  read_pdf_config:
+    ignore_tables:
+    - 0
+    tables:
+      foreign_tax_summary:
+        n_rows: 4
+      income_type_group_summary:
+        n_rows: 4
+      scope_summary:
+        n_rows: 4
+      music_royalties:
+        pages: 13-1090
+        n_rows:
+          first_page: 7
+          other_pages: 5        
+  format_pdf_config:
+    tables:
+      foreign_tax_summary:
+        normalize_column_names: true
+        drop_last_rows: 1
+        replace_values:
+          replace_config:
+            ',': ''
+        col_types:
+          type_mappings:
+            gross_payable: float
+            tax_rate: float
+            withholding_tax: float
+            net_payable: float
+        fillna:
+          how:
+            territory_name: ffill
+            tax_rate: ffill
+        query:
+          query_string:
+            '~income_type_group.str.contains(r"All\s\(\d{1}\sTypes\)")'
+      income_type_group_summary:
+        normalize_column_names: true
+        replace_values:
+          replace_config:     
+            ',': ''
+        drop_last_rows: 1
+        col_types:
+          type_mappings:
+            gross_payable: float
+            withholding_tax: float
+            net_payable: float
+      scope_summary:
+        normalize_column_names: true
+        replace_values:
+          replace_config:     
+            ',': ''
+        drop_last_rows: 1
+        col_types:
+          type_mappings:
+            gross_payable: float
+            withholding_tax: float
+            net_payable: float                     
+      music_royalties:
+        extract_track_titles: true
+        normalize_column_names: true
+        query:
+          query_string:
+            '~units.isna()'       
+        replace_values:
+          replace_config:
+            '@': ''     
+            ',': ''
+        col_types:
+          type_mappings:
+            statement_id: int
+            units: int
+            amount_received: float
+            royalty_rate: float
+            amount_paid: float
+        add_song_titles: True      
