@@ -10,10 +10,7 @@ wc_music_corp:
       scope_summary:
         n_rows: 4
       music_royalties:
-        pages: 13-1090
-        n_rows:
-          first_page: 7
-          other_pages: 5        
+        n_rows: 7
   format_pdf_config:
     tables:
       foreign_tax_summary:
@@ -67,6 +64,9 @@ wc_music_corp:
           replace_config:
             '@': ''     
             ',': ''
+        fillna:
+          how:
+            scope: ffill
         col_types:
           type_mappings:
             statement_id: int

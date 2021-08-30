@@ -41,7 +41,7 @@ def format_works(input_works):
     work_creator_mapping, work_creator_role_mapping = format_work_creators(works_df_exploded.drop(columns=['attribute-list']))
     return {
         'DimWork': works_df[['id','type','title','language','iswc','disambiguation']].drop_duplicates().reset_index(drop=True),
-        'DimWorkCreator': work_creator_role_mapping,
+        'DimWorkCreatorType': work_creator_role_mapping,
         'MappingWorkAttribute': work_attribute_mapping,
         'MappingWorkCreator': work_creator_mapping
     }

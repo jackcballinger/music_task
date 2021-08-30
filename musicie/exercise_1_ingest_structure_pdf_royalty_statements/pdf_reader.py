@@ -1,6 +1,6 @@
 from collections import defaultdict
-from itertools import islice
 import logging
+from musicie.exercise_1_ingest_structure_pdf_royalty_statements.pdf_formatter import format_front_page
 import re
 import tempfile
 from tqdm import tqdm
@@ -50,7 +50,7 @@ class PDFReader:
         with pdfplumber.open(self._pdf_path) as f:
             pdf_pages = f.pages[
                 int(table_config['pages'].split('-')[0])-1: int(table_config['pages'].split('-')[1])
-            ][:20] if isinstance(table_config['pages'], str) else f.pages[table_config['pages']]
+            ] if isinstance(table_config['pages'], str) else f.pages[table_config['pages']]
             if isinstance(pdf_pages, list):
                 return [
                     {
@@ -61,10 +61,13 @@ class PDFReader:
             return [{'page_no': 0, 'text': pdf_pages.extract_text().splitlines()[:table_config['n_rows']]}]
 
     def read_tables(self, table_name, pages):
-        self._tables[table_name].update({'pages': f"{min(pages)}-{max(pages)+1}" if isinstance(pages, range) else pages+1})
+        if table_name == 'music_royalties':
+            self._tables[table_name].update({'pages': f"{min(pages)}-{max(pages)}" if isinstance(pages, range) else pages+1})
+        else:
+            self._tables[table_name].update({'pages': f"{min(pages)}-{max(pages)+1}" if isinstance(pages, range) else pages+1})
         return self.get_pdf_text(self._tables[table_name]), self.get_pdf_tables(**{k:v for k, v in self._tables[table_name].items() if k != 'n_rows'})
 
-def extract_text(input_pdf):
+def extract_front_page_text(input_pdf):
     pdf_file_writer = PdfFileWriter()
     pdf_front_page = input_pdf if input_pdf.get('/Rotate') == 0 else input_pdf.rotateClockwise(360+input_pdf.get('/Rotate'))
     pdf_file_writer.addPage(pdf_front_page)
@@ -74,10 +77,11 @@ def extract_text(input_pdf):
         return f.pages[0].extract_text()
 
 def determine_document_schema_type(input_pdf_path):
-    front_page_text = extract_text(PdfFileReader(open(input_pdf_path, 'rb')).getPage(0))
+    front_page_text = extract_front_page_text(PdfFileReader(open(input_pdf_path, 'rb')).getPage(0))
     potential_structures = [structure_name for regex, structure_name in pdf_structure_regex_dict.items() if re.match(re.compile(regex, re.DOTALL), front_page_text)]
     if len(potential_structures) == 1:
-        return potential_structures[0]
+        front_page_data = format_front_page(potential_structures[0], front_page_text)
+        return potential_structures[0], front_page_data
 
 pdf_structure_regex_dict = {
     r'.*WC Music Corp\..*': 'wc_music_corp'
