@@ -1,19 +1,10 @@
 wc_music_corp:
-  read_pdf_config:
-    ignore_tables:
-    - 0
-    tables:
-      foreign_tax_summary:
-        n_rows: 4
-      income_type_group_summary:
-        n_rows: 4
-      scope_summary:
-        n_rows: 4
-      music_royalties:
-        n_rows: 7
   format_pdf_config:
+    ignore_tables: 1
     tables:
       foreign_tax_summary:
+        enhance_table_data:
+        - add_page_numbers      
         normalize_column_names: true
         drop_last_rows: 1
         replace_values:
@@ -33,6 +24,8 @@ wc_music_corp:
           query_string:
             '~income_type_group.str.contains(r"All\s\(\d{1}\sTypes\)")'
       income_type_group_summary:
+        enhance_table_data:
+        - add_page_numbers      
         normalize_column_names: true
         replace_values:
           replace_config:     
@@ -44,6 +37,8 @@ wc_music_corp:
             withholding_tax: float
             net_payable: float
       scope_summary:
+        enhance_table_data:
+        - add_page_numbers
         normalize_column_names: true
         replace_values:
           replace_config:     
@@ -55,7 +50,10 @@ wc_music_corp:
             withholding_tax: float
             net_payable: float                     
       music_royalties:
-        extract_track_titles: true
+        enhance_table_data:
+        - scope
+        - track_titles
+        - add_page_numbers
         normalize_column_names: true
         query:
           query_string:
@@ -74,4 +72,17 @@ wc_music_corp:
             amount_received: float
             royalty_rate: float
             amount_paid: float
-        add_song_titles: True      
+  validate_pdf_config:
+    report_output_name: test_report.pdf
+    style: 
+    tables:
+      foreign_tax_summary:
+        validate_amount_due: net_payable
+      income_type_group_summary:
+        validate_amount_due: net_payable
+      scope_summary:
+        validate_amount_due: net_payable
+      music_royalties:
+        validate_amount_due: amount_paid
+        validate_scope_sum: true
+        validate_track_sum: true

@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from musicie.exercise_3_artist_recording_universe.artist_recordings import get_artist_recordings, format_artist_recordings
@@ -5,6 +6,26 @@ from musicie.exercise_3_artist_recording_universe.artist_works import get_works,
 from musicie.exercise_3_artist_recording_universe.artists import get_matched_artists, format_artists
 from musicie.utils import write_data_to_sql, read_data_from_excel
 
+def format_table(input_table_name, input_table_data):
+    input_table_data.columns = [col.replace('-','_') for col in input_table_data.columns]
+    if re.match(r'^Dim.*', input_table_name):
+        input_table_data.rename(
+            columns={
+                input_table_data.columns[0]: 'id'
+            }, inplace=True
+        )
+    elif re.match(r'^Mapping.*', input_table_name):
+        input_table_data.rename(
+            columns={
+                **{input_table_data.columns[0]: re.findall('[A-Z][^A-Z]*', input_table_name)[1].lower() + '_' + input_table_data.columns[0]},
+                **{col: re.findall('[A-Z][^A-Z]*', input_table_name)[2].lower() + '_' + col.split('.')[-1] if '.' in col else re.findall('[A-Z][^A-Z]*', input_table_name)[2].lower() + '_' + col for col in input_table_data.columns[1:]}
+            }, inplace=True
+        )
+        
+    return input_table_data
+
+def format_tables_for_sql(input_tables_dict):
+    return {table_name: format_table(table_name, table_data) for table_name, table_data in input_tables_dict.items()}
 
 def run_exercise(input_folder, write_mode=False):
     artists_to_match = read_data_from_excel(
@@ -25,4 +46,4 @@ def run_exercise(input_folder, write_mode=False):
 
     if write_mode:
         # write data to sql
-        write_data_to_sql({**artist_outputs, **recording_outputs, **work_outputs}, if_exists='replace', index=False)
+        write_data_to_sql(format_tables_for_sql({**artist_outputs, **recording_outputs, **work_outputs}), if_exists='replace', index=False)
