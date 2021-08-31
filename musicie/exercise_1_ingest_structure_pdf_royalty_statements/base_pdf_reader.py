@@ -48,7 +48,7 @@ class BasePDFReader:
                 'page_number': page_no,
                 'page_tables': self.get_pdf_tables(pages=page_no),
                 'page_text': self.get_pdf_text(page=page_no)
-            } for page_no in tqdm(range(1,no_pages+1)[:20])
+            } for page_no in tqdm(range(1,no_pages+1))
         ], self.get_table_pages(), no_pages
 
 

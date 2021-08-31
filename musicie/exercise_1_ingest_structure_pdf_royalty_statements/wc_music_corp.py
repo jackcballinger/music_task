@@ -5,7 +5,7 @@ import logging
 import re
 
 import numpy as np
-from numpy import isclose
+from math import isclose
 import pandas as pd
 
 from musicie.exercise_1_ingest_structure_pdf_royalty_statements.base_pdf_formatter import BasePDFFormatter
@@ -25,7 +25,7 @@ class WcMusicCorpValidator(BasePDFValidator):
         return {
             'Table Name': table_name,
             'Test Type': 'amount_due',
-            'Result': 'pass' if isclose(amount_due, amount_due_col, 1e-6) else 'fail'
+            'Result': 'pass' if isclose(amount_due, amount_due_col, abs_tol=10) else 'fail'
         }
 
     def validate_scope_sum(self, table_data, table_name, *args):
@@ -33,7 +33,7 @@ class WcMusicCorpValidator(BasePDFValidator):
         return {
             'Table Name': table_name,
             'Test Type': 'scope_sum',
-            'Result': 'pass' if all([table_data[table_data['scope']==item['scope_name']]['amount_paid'].sum()==item['gross_payable'] for item in scope_sum]) else 'fail'
+            'Result': 'pass' if all([isclose(table_data[table_data['scope']==item['scope_name']]['amount_paid'].sum(),item['gross_payable'],abs_tol=10) for item in scope_sum]) else 'fail'
         }
         
     def validate_track_sum(self, table_data, table_name, *args):
@@ -41,7 +41,7 @@ class WcMusicCorpValidator(BasePDFValidator):
         return {
             'Table Name': table_name,
             'Test Type': 'track_sum',
-            'Result': 'pass' if all([table_data[table_data['track_title'] == track_name]['track_amount_received'][0] == track_sum for track_name, track_sum in track_amount_received.items()]) else 'fail'
+            'Result': 'pass' if all([isclose(table_data[table_data['track_title'] == track_name]['track_amount_received'].astype('float').unique().sum(), track_sum, abs_tol=10) for track_name, track_sum in track_amount_received.items()]) else 'fail'
         }
 
     def validate_num_pages(self, table_data):
@@ -64,8 +64,7 @@ class WcMusicCorpValidator(BasePDFValidator):
         self.write_validation_data(
             tests_result
         )
-        pass
-
+        return tests_result
 
 
 class WcMusicCorpFormatter(BasePDFFormatter):
@@ -122,24 +121,25 @@ def extract_track_titles(input_page_data):
     for page in input_page_data:
         output_page_tables = []
         for page_table in page['page_tables']:
-            page_table['track_information'] = page_table['Income Type'][page_table['Statement Id'].isna()]
-            page_table['track_title'] = page_table['track_information'].fillna(method='ffill').str.split('-').str[0].replace('\s+', ' ', regex=True)
-            page_table['track_title'] = page_table['track_title'].apply(lambda x: x if re.match(r"\b[A-Z][A-Z]+\b", x) and not ',' in x else None)
-            track_totals = page_table['track_information'].str.extractall(r'(\d+\.\d{3})').unstack()
-            track_totals.columns = track_totals.columns.droplevel()
-            output_df = pd.concat(
-                [
-                    page_table.drop(columns=['track_information']), 
-                    track_totals.rename(
-                        columns={
-                            0: 'track_amount_received',
-                            1: 'track_amount_paid'
-                        }
-                    )
-                ], axis=1
-            )
-            output_df[['track_amount_received', 'track_amount_paid']] = output_df[['track_amount_received', 'track_amount_paid']].fillna(method='ffill')
-            output_page_tables.append(output_df)
+            if not page_table.empty:
+                page_table['track_information'] = page_table['Income Type'][page_table['Statement Id'].isna()]
+                page_table['track_title'] = page_table['track_information'].fillna(method='ffill').str.split('-').str[0].replace('\s+', ' ', regex=True)
+                page_table['track_title'] = page_table['track_title'].apply(lambda x: x if re.match(r"\b[A-Z][A-Z]+\b", x) and not ',' in x else None)
+                track_totals = page_table['track_information'].str.replace(',','').str.extractall(r'(\d+\.\d{3})').unstack()
+                track_totals.columns = track_totals.columns.droplevel()
+                output_df = pd.concat(
+                    [
+                        page_table.drop(columns=['track_information']), 
+                        track_totals.rename(
+                            columns={
+                                0: 'track_amount_received',
+                                1: 'track_amount_paid'
+                            }
+                        )
+                    ], axis=1
+                )
+                output_df[['track_amount_received', 'track_amount_paid']] = output_df[['track_amount_received', 'track_amount_paid']].fillna(method='ffill')
+                output_page_tables.append(output_df)
         page['page_tables'] = output_page_tables
     return input_page_data
         

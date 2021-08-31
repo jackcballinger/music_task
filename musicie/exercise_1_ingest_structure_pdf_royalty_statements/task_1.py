@@ -53,17 +53,22 @@ def run_exercise(input_folder, write_mode=False):
         formatter_cls = get_class(document_schema_type, 'formatter')
         validator_cls = get_class(document_schema_type, 'validator')
         # page_data, page_table_numbers, no_pages = reader_cls(pdf_file).get_page_data()
-        with open('page_data.pkl', 'rb') as f:
-            page_data, page_table_numbers = pickle.load(f)
+        with open('pdf_output.pkl', 'rb') as f:
+            page_data, page_table_numbers, no_pages = pickle.load(f)
         no_pages = 1090
+        page_data = [
+            {'page_number': page['page_number'], 'page_tables': [
+                table.drop(
+                    columns=[col for col in ['scope','track_title','track_amount_received','track_amount_paid'] if col in table.columns]
+                ) for table in page['page_tables']], 'page_text': page['page_text']} for page in page_data]
         formatted_pdf_data, formatted_page_table_numbers = formatter_cls(pdf_config['format_pdf_config']).format_pdf_data(page_data, page_table_numbers)
-        validated_pdf_data = validator_cls(pdf_config['validate_pdf_config'], formatted_pdf_data, formatted_page_table_numbers, front_page_data, no_pages).validate_data()
-        formatted_data[front_page_data['unique_id']] = validated_pdf_data
+        validation_report = validator_cls(pdf_config['validate_pdf_config'], formatted_pdf_data, formatted_page_table_numbers, front_page_data, no_pages).validate_data()
+        formatted_data[front_page_data['unique_id']] = formatted_pdf_data
 
-    if write_mode:
-        write_data_to_sql(format_tables_for_sql(formatted_data))
+    # if write_mode:
+    #     write_data_to_sql(format_tables_for_sql(formatted_data))
 
     with open('formatted_page_data.pkl' ,'wb') as f:
         pickle.dump(formatted_data, f, protocol=pickle.HIGHEST_PROTOCOL)
 
-pass
+    pass
