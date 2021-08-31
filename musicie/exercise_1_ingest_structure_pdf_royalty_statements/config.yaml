@@ -83,5 +83,6 @@ wc_music_corp:
       scope_summary:
         validate_amount_due: net_payable
       music_royalties:
+        validate_amount_due: amount_paid
         validate_scope_sum: true
         validate_track_sum: true

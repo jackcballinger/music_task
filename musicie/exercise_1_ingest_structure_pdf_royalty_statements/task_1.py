@@ -61,7 +61,9 @@ def run_exercise(input_folder, write_mode=False):
                 table.drop(
                     columns=[col for col in ['scope','track_title','track_amount_received','track_amount_paid'] if col in table.columns]
                 ) for table in page['page_tables']], 'page_text': page['page_text']} for page in page_data]
-        formatted_pdf_data, formatted_page_table_numbers = formatter_cls(pdf_config['format_pdf_config']).format_pdf_data(page_data, page_table_numbers)
+        # formatted_pdf_data, formatted_page_table_numbers = formatter_cls(pdf_config['format_pdf_config']).format_pdf_data(page_data, page_table_numbers)
+        with open('formtted_data.pkl', 'rb') as f:
+            formatted_pdf_data, formatted_page_table_numbers = pickle.load(f)        
         validation_report = validator_cls(pdf_config['validate_pdf_config'], formatted_pdf_data, formatted_page_table_numbers, front_page_data, no_pages).validate_data()
         formatted_data[front_page_data['unique_id']] = formatted_pdf_data
 

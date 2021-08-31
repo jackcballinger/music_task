@@ -1,11 +1,60 @@
-<!DOCTYPE html>
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>{{ title }}</title>
 </head>
 <body>
-    <h2>Test Results</h2>
-     {{ test_result_table }}
+<div class="container-fluid p-0">
+    <div style="width:100%;overflow:hidden;">
+        <div style="width:60%;float:left;text-align:center">
+            <h2 class="display-5">{{ title }}</h2>
+        </div>
+        <div style="float:left;text-align:center">
+            <h2 class="display-5">{{ document_result }}</h2>
+        </div>
+    </div>
+    <hr>
+    <div style="width:100%;overflow:hidden;">
+        <h3>Testing Results</h3>
+        <br>
+        <div>
+            <h5>Whole Document Results:</h5>
+            <div class="container-fluid p-0">
+                <div style="width:30%">
+                    <br>
+                    {{ whole_document_tests }}
+                </div>
+                <br>
+            </div>
+        </div>
+        <div>
+            <h5>Table Results:</h5>
+            <div class="container-fluid p-0">
+                <div>
+                    <br>
+                    {{ table_tests }}
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div>
+        <h3> Test Failures</h3>
+        <div>
+            {{ test_failures }}
+        </div>
+    </div>
+    <hr>
+    <div>
+        <h3> Test Definitions</h3>
+        <div>
+            <ul>
+            {% for definition in test_definitions %}
+                <li><b>{{definition.test_name}}</b>: {{definition.test_description}} </li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
 </body>
 </html>

@@ -19,35 +19,46 @@ class WcMusicCorpValidator(BasePDFValidator):
     def __init__(self, config, pdf_data, page_table_numbers, front_page_data, no_pages):
         super().__init__(config, pdf_data, page_table_numbers, front_page_data, no_pages)
     
+        self._test_definitions = [
+            {'test_name':'Number of Pages', 'test_description': 'Document test to check that the number of pages parsed is equal to the number of pages in the document'},
+            {'test_name':'Amount Due', 'test_description': 'Table test to check that the amounts due in the various tables tally up with the amount on the front page'},
+            {'test_name':'Scope Sum', 'test_description': 'Table test to check that the amounts paid in the Scope Summary table tally up with those in the Music Royalties table'},
+            {'test_name':'Track Sum', 'test_description': 'Table test to check that the amounts received in the Music Royalties tables corresponding to each song tally with those stated in the document'},
+        ]
+
     def validate_amount_due(self, table_data, table_name, col):
         amount_due = self._front_page_data['Amount Due']
         amount_due_col = table_data[col].sum()
         return {
-            'Table Name': table_name,
-            'Test Type': 'amount_due',
-            'Result': 'pass' if isclose(amount_due, amount_due_col, abs_tol=10) else 'fail'
+            'Table Name': table_name.title().replace('_',' '),
+            'Test Type': 'Amount Due',
+            'Calculation': pd.DataFrame([{'table_name': table_name, 'stated_amount_due': amount_due, 'calculated_amount_due': amount_due_col}]),
+            'Result': 'Pass' if isclose(amount_due, amount_due_col, abs_tol=10) else 'Fail'
         }
 
     def validate_scope_sum(self, table_data, table_name, *args):
         scope_sum = self._pdf_data['scope_summary'][['scope_name','gross_payable']].to_dict(orient='records')
         return {
-            'Table Name': table_name,
-            'Test Type': 'scope_sum',
-            'Result': 'pass' if all([isclose(table_data[table_data['scope']==item['scope_name']]['amount_paid'].sum(),item['gross_payable'],abs_tol=10) for item in scope_sum]) else 'fail'
+            'Table Name': table_name.title().replace('_',' '),
+            'Test Type': 'Scope Sum',
+            'Calculation': pd.DataFrame([{'table_name': table_name, 'scope_name': item['scope_name'], 'scope_stated_sum': table_data[table_data['scope']==item['scope_name']]['amount_paid'].sum(), 'scope_calculated_sum': item['gross_payable']} for item in scope_sum]),
+            'Result': 'Pass' if all([isclose(table_data[table_data['scope']==item['scope_name']]['amount_paid'].sum(),item['gross_payable'],abs_tol=10) for item in scope_sum]) else 'Fail'
         }
         
     def validate_track_sum(self, table_data, table_name, *args):
         track_amount_received = table_data.groupby('track_title')['amount_received'].sum()
         return {
-            'Table Name': table_name,
-            'Test Type': 'track_sum',
-            'Result': 'pass' if all([isclose(table_data[table_data['track_title'] == track_name]['track_amount_received'].astype('float').unique().sum(), track_sum, abs_tol=10) for track_name, track_sum in track_amount_received.items()]) else 'fail'
+            'Table Name': table_name.title().replace('_',' '),
+            'Test Type': 'Track Sum',
+            'Calculation': pd.DataFrame([{'table_name': table_name, 'track_name': track_name, 'track_stated_sum': table_data[table_data['track_title'] == track_name]['track_amount_received'].astype('float').unique().sum(), 'track_calculated_sum': track_sum} for track_name, track_sum in track_amount_received.items()]),
+            'Result': 'Pass' if all([isclose(table_data[table_data['track_title'] == track_name]['track_amount_received'].astype('float').unique().sum(), track_sum, abs_tol=10) for track_name, track_sum in track_amount_received.items()]) else 'Fail'
         }
 
     def validate_num_pages(self, table_data):
        return {
-           'Test Type': 'num_pages',
-           'Result': 'pass' if table_data['page_number'].max() == self._no_pages else 'fail'
+           'Test Type': 'Number of Pages',
+           'Calculation': f"{table_data['page_number'].max()} == {self._no_pages}",
+           'Result': 'Pass' if table_data['page_number'].max() == self._no_pages else 'Fail'
        }
 
     def validate_table(self, table_name, table_data, table_funcs):
@@ -59,12 +70,15 @@ class WcMusicCorpValidator(BasePDFValidator):
         tests_result = defaultdict(list)
         for table_name, table in self._pdf_data.items():
             table_funcs = {k: validation_dict[k] for k in self._table_config[table_name]}
-            tests_result['table_results'].append(self.validate_table(table_name, table, table_funcs))
-        tests_result['whole_document_results'].append([self.validate_num_pages(list(self._pdf_data.values())[-1])])
+            table_results = self.validate_table(table_name, table, table_funcs)
+            tests_result['table_results'].append(table_results)
+        document_results = [self.validate_num_pages(list(self._pdf_data.values())[-1])]
+        tests_result['whole_document_results'].append(document_results)
         self.write_validation_data(
-            tests_result
+            tests_result, self._test_definitions
         )
         return tests_result
+
 
 
 class WcMusicCorpFormatter(BasePDFFormatter):
