@@ -31,27 +31,21 @@ def format_tables_for_sql(input_tables_dict):
     return {table_name: format_table(table_name, table_data) for table_name, table_data in input_tables_dict.items()}
 
 def run_exercise(input_folder, output_folder, write_mode=False, database_config=None):
-    # artists_to_match = read_data_from_excel(
-    #     Path(input_folder) / 'Artists to match_vF.xlsx'
-    # )
+    artists_to_match = read_data_from_excel(
+        Path(input_folder) / 'Artists to match_vF.xlsx'
+    )
 
-    # # match artists
-    # matched_artists = get_matched_artists(artists_to_match)
-    # with open(Path(__file__).parent.parent.parent / 'matched_artists.pkl', 'rb') as f:
-    #     matched_artists = pickle.load(f)
-    # artist_outputs = format_artists(matched_artists)
+    # match artists
+    matched_artists = get_matched_artists(artists_to_match)
+    artist_outputs = format_artists(matched_artists)
 
-    # # corresponding recordings
-    # artist_recordings = get_artist_recordings(artist_outputs['DimArtist'])
-    # with open(Path(__file__).parent.parent.parent / 'artist_recordings.pkl', 'rb') as f:
-    #     artist_recordings = pickle.load(f)
-    # recording_outputs = format_artist_recordings(artist_recordings)
+    # corresponding recordings
+    artist_recordings = get_artist_recordings(artist_outputs['DimArtist'])
+    recording_outputs = format_artist_recordings(artist_recordings)
 
-    # # corresponding works
-    # artist_works = get_works(recording_outputs['DimRecord'])  
-    # with open(Path(__file__).parent / 'work_metadata.pkl', 'rb') as f:
-    #     artist_works = pickle.load(f)    
-    # work_outputs = format_works(artist_works)
+    # corresponding works
+    artist_works = get_works(recording_outputs['DimRecord'])  
+    work_outputs = format_works(artist_works)
 
     with open('task_1_outputs.pkl', 'rb') as f:
         artist_outputs, recording_outputs, work_outputs = pickle.load(f)

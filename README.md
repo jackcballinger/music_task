@@ -22,6 +22,23 @@ To run, use the cli:
 ```
 musicie --exercise_number 1 --write_mode true
 ```
+
+The arguments the cli takes are:
+```
+required_arguments: 
+  --exercise_number {1,3}
+                        Number of the exercise to run
+optional_arguments:
+  --input_folder_location INPUT_FOLDER_LOCATION
+                        Location of the folder containing inputs
+  --write_mode WRITE_MODE
+                        Boolean flag that when true, will write output data to file
+  --postgres_yaml POSTGRES_YAML
+                        Location of a postgres_config.yaml file. If specified, code will alltempt to write to sql.
+  --output_folder_location OUTPUT_FOLDER_LOCATION
+                        Location of the folder to write outputs to
+```
+
 This will run exercise 1, and will write the corresponding files to the default download location, which is:
 ```C:/Downloads/jack_ballinger_task_outputs/```
 

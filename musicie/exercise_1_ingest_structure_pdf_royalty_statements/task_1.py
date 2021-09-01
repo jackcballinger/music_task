@@ -1,5 +1,4 @@
 import logging
-import pickle
 from pathlib import Path
 
 import yaml
@@ -48,19 +47,13 @@ def run_exercise(input_folder, output_folder, write_mode=False, database_config=
     for pdf_file in input_pdf_files:
         document_schema_type, front_page_data = determine_document_schema_type(pdf_file)
         pdf_config = CONFIG[document_schema_type]
-    #     reader_cls = get_class(document_schema_type, 'reader')
-    #     formatter_cls = get_class(document_schema_type, 'formatter')
+        reader_cls = get_class(document_schema_type, 'reader')
+        formatter_cls = get_class(document_schema_type, 'formatter')
         validator_cls = get_class(document_schema_type, 'validator')
-    #     page_data, page_table_numbers, no_pages = reader_cls(pdf_file).get_page_data()
-    #     formatted_pdf_data, formatted_page_table_numbers = formatter_cls(pdf_config['format_pdf_config']).format_pdf_data(page_data, page_table_numbers)       
-        with open(Path(__file__).parent.parent.parent / 'formtted_data.pkl', 'rb') as f:
-            formatted_pdf_data, formatted_page_table_numbers = pickle.load(f)
-        no_pages = 1090
+        page_data, page_table_numbers, no_pages = reader_cls(pdf_file).get_page_data()
+        formatted_pdf_data, formatted_page_table_numbers = formatter_cls(pdf_config['format_pdf_config']).format_pdf_data(page_data, page_table_numbers)       
         validator_cls(pdf_config['validate_pdf_config'], Path(output_folder) / Path(__file__).parent.name / front_page_data['unique_id'], formatted_pdf_data, formatted_page_table_numbers, front_page_data, no_pages).validate_data()
-    #     formatted_data[front_page_data['unique_id']] = formatted_pdf_data
-
-    with open(Path(__file__).parent.parent.parent / 'formatted_page_data.pkl', 'rb') as f:
-        formatted_data = pickle.load(f)
+        formatted_data[front_page_data['unique_id']] = formatted_pdf_data
 
     if write_mode:
         # write data to csv
