@@ -40,7 +40,7 @@ optional_arguments:
 ```
 
 This will run exercise 1, and will write the corresponding files to the default download location, which is:
-```C:/Downloads/jack_ballinger_task_outputs/```
+```{Home Directory}/Downloads/jack_ballinger_task_outputs/```
 
 The code for musicie has been formatted using [black](https://black.readthedocs.io/en/stable/) - this does make some code look a little strange, but in my view, it's good to have all code following similar style guidelines.
 The code has also been linted in order to ensure best practices.
