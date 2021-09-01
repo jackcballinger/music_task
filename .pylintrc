@@ -1,0 +1,10 @@
+[MASTER]
+disable=missing-module-docstring,consider-using-with,logging-fstring-interpolation,abstract-method,duplicate-code
+
+[BASIC]
+good-names=i,x,df,f,s3,k,v,n
+
+[DESIGN]
+max-attributes=10
+max-args=10
+max-locals=25
