@@ -19,7 +19,7 @@
         <div>
             <h5>Whole Document Results:</h5>
             <div class="container-fluid p-0">
-                <div style="width:30%">
+                <div style="width:40%">
                     <br>
                     {{ whole_document_tests }}
                 </div>
@@ -53,6 +53,18 @@
                 <li><b>{{definition.test_name}}</b>: {{definition.test_description}} </li>
             {% endfor %}
             </ul>
+        </div>
+    </div>
+    <div style="width:100%;overflow:hidden;position:fixed;bottom:0">
+        <div style="width:50%;float:left;text-align:left">
+            <h6>
+                Date Generated: {{ date_generated }}
+            </h6>
+        </div>
+        <div style="float:left;text-align:right">
+            <h6>
+                Input PDF ID: {{ document_id }}
+            </h6>
         </div>
     </div>
 </div>

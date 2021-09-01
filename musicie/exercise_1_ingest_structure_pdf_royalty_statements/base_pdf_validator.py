@@ -1,8 +1,9 @@
 import codecs
+from datetime import datetime
 from itertools import chain
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Template
 import pandas as pd
 import pdfkit
 
@@ -19,7 +20,6 @@ class BasePDFValidator:
         self._page_table_numbers = page_table_numbers
         self._front_page_data = front_page_data
         self._no_pages = no_pages
-        # self._env = Environment(loader=FileSystemLoader(searchpath="."))
         self._template = TEMPLATE
         self._css_files = [
             Path(__file__).parent / 'static' / 'bootstrap-4.1.3-dist' / 'css' / 'bootstrap.css',
@@ -35,7 +35,9 @@ class BasePDFValidator:
             "whole_document_tests": self.format_whole_document_html(input_validation_data['whole_document_results'][0]),
             "table_tests": self.format_table_html(pd.DataFrame(list(chain.from_iterable(input_validation_data['table_results']))).pivot(index='Test Type', columns='Table Name', values='Result').reset_index()),
             "test_failures": self.format_failures(failures) if failures else 'WOOO NO FAILURES!',
-            "test_definitions": test_definitions
+            "test_definitions": test_definitions,
+            "document_id": self._front_page_data['unique_id'],
+            "date_generated": datetime.today().date().strftime('%d/%m/%Y'),
         }
         html_out = self._template.render(template_vars)
         pdfkit.from_string(
@@ -69,18 +71,15 @@ class BasePDFValidator:
     @staticmethod
     def format_failure_dfs(input_failure_dfs):
         if not input_failure_dfs:
-            return []
+            return ''
         formatted_input_failure_dfs = [{k.lower().replace(' ','_'): v for k, v in x.items()} for x in input_failure_dfs]
-        failure_html_string = [
-            f"""<li>
-                    <p><b>Table Name</b>: {table['table_name']}
-                    <p><b>Test Type</b>: {table['test_type']}
-                    <p><b>Test Calculation</b>: {table['calculation'].to_html(
+        failure_html_string = ''.join([
+            f"""<li><p><b>Table Name</b>: {table['table_name']}<p><b>Test Type</b>: {table['test_type']}<p><b>Test Calculation</b>: {table['calculation'].to_html(
             index=False,
             col_space=50,
             justify='left',
             classes=['table']
-        ).replace('border="1"','border="0"')}</li>""" for table in formatted_input_failure_dfs]
+        ).replace('border="1"','border="0"')}</li>""" for table in formatted_input_failure_dfs])
         failure_template=Template(f"""<div>
                         <ul>
                         {failure_html_string}
@@ -91,12 +90,12 @@ class BasePDFValidator:
     @staticmethod
     def format_failure_strings(input_failure_strings):
         if not input_failure_strings:
-            return []
+            return ''
 
     def format_failures(self, input_failure):
         failure_dfs = self.format_failure_dfs([failure for failure in input_failure if isinstance(failure['Calculation'], pd.DataFrame)])
-        failure_strings = self.format_failure_dfs([failure for failure in input_failure if isinstance(failure['Calculation'], pd.DataFrame)])
-        return failure_dfs, failure_strings
+        failure_strings = self.format_failure_strings([failure for failure in input_failure if isinstance(failure['Calculation'], str)])
+        return failure_dfs + failure_strings
 
     def validate_data(self):
         raise NotImplementedError
