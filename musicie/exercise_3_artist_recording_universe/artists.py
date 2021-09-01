@@ -15,26 +15,33 @@ _LOGGER = logging.getLogger(__file__)
 musicbrainzngs.auth("test_application", "xqL4RTKh@7#9P4cG")
 musicbrainzngs.set_useragent("test_application", "0.1", "http://example.com/music")
 
-
-def list_of_dicts_to_dict(input_list_of_dicts):
-    return dict((key, d[key]) for d in input_list_of_dicts for key in d)
-
-
 # musicbrainz functions
-def search_recordings(song, **kwargs):
-    return musicbrainzngs.search_recordings(query=song, **kwargs)
+def search_recordings(track: str, **kwargs) -> dict:
+    """
+    Function to search for recordings using the musicbrainszngs api
+    """
+    return musicbrainzngs.search_recordings(query=track, **kwargs)
 
 
-def search_artists(artist, **kwargs):
+def search_artists(artist: str, **kwargs) -> dict:
+    """
+    Function to search for arists using the musicbrainszngs api
+    """
     return musicbrainzngs.search_artists(query=artist, **kwargs)
 
 
-def browse_recordings(artist, **kwargs):
+def browse_recordings(artist: str, **kwargs) -> dict:
+    """
+    Function to broswse recordings for a specific artist using the musicbrainszngs api
+    """
     return musicbrainzngs.browse_recordings(artist=artist, **kwargs)
 
 
 # formatting functions
-def format_search_recording_response(input_recording_response):
+def format_search_recording_response(input_recording_response: dict) -> dict:
+    """
+    Function to format the search recording response
+    """
     recording_list = input_recording_response["recording-list"]
     artist_recordings_dict = defaultdict(list)
     for recording in recording_list:
@@ -48,33 +55,48 @@ def format_search_recording_response(input_recording_response):
     }
 
 
-def format_search_artist_response(input_artist_response):
+def format_search_artist_response(input_artist_response: dict) -> dict:
+    """
+    Function to format the search artist response
+    """
     return {x["id"]: x for x in input_artist_response["artist-list"]}
 
 
-def format_browse_recordings_response(input_recording_response):
+def format_browse_recordings_response(input_recording_response: dict) -> list:
+    """
+    Function to format the browse recordings by artist response
+    """
     return input_recording_response["recording-list"]
 
 
-def get_recordings(input_song, input_artist, **kwargs):
+def get_recordings(input_track: str, input_artist: str, **kwargs) -> dict:
+    """
+    Function to get and format recordings given an input track and artist
+    """
     recordings_search_response = search_recordings(
-        input_song, artist=input_artist, **kwargs
+        input_track, artist=input_artist, **kwargs
     )
     return format_search_recording_response(recordings_search_response)
 
 
-def get_artists(input_artist, **kwargs):
-    artist_search_response = search_artists(input_artist, **kwargs)
+def get_artists(artist_name: str, **kwargs) -> dict:
+    """
+    Function to get and format artists given an input artist_name
+    """
+    artist_search_response = search_artists(artist_name, **kwargs)
     return format_search_artist_response(artist_search_response)
 
 
-def get_artist_recordings(input_artist, **kwargs):
-    n_records = browse_recordings(input_artist)["recording-count"]
+def get_artist_recordings(artist_id: str, **kwargs) -> dict:
+    """
+    Function to get and format artist recordings given an input artist_id
+    """
+    n_records = browse_recordings(artist_id)["recording-count"]
     recordings = []
     for page in range(int(n_records / 100) + 1):
         recordings.append(
             format_browse_recordings_response(
-                browse_recordings(input_artist, limit=100, offset=page * 100, **kwargs)
+                browse_recordings(artist_id, limit=100, offset=page * 100, **kwargs)
             )
         )
     return {
@@ -83,10 +105,14 @@ def get_artist_recordings(input_artist, **kwargs):
     }
 
 
-def match_artists(input_artist, input_song):
+def match_artists(input_artist: str, input_track: str) -> tuple(list, str):
+    """
+    Function that attempts to match input artists and tracks to an artist in the
+    musicbrainz ecosystem
+    """
     # first attempt
     artist_response_dict = get_artists(input_artist)
-    recordings_response_dict = get_recordings(input_song, input_artist)
+    recordings_response_dict = get_recordings(input_track, input_artist)
     cross_validated_artists = set(artist_response_dict).intersection(
         recordings_response_dict
     )
@@ -96,9 +122,10 @@ def match_artists(input_artist, input_song):
         ], "1_cross_validation"
 
     if len(cross_validated_artists) == 0:
-        # if no valid result is returned from the first iteration, introduce the strict=True argument
-        # this will reduce down the number of search results, and will hopefully narrow down to the correct song/artist combination
-        recordings_response_dict = get_recordings(input_song, input_artist, strict=True)
+        # if no valid result is returned from the first iteration, introduce the strict=True
+        # argument this will reduce down the number of search results, and will hopefully
+        # narrow down to the correct song/artist combination
+        recordings_response_dict = get_recordings(input_track, input_artist, strict=True)
 
         cross_validated_artists = set(artist_response_dict).intersection(
             recordings_response_dict
@@ -109,9 +136,10 @@ def match_artists(input_artist, input_song):
             ], "2_cross_validation_strict"
 
         if len(cross_validated_artists) == 0:
-            raise KeyError(f"Unable to match {input_artist}: {input_song}")
+            raise KeyError(f"Unable to match {input_artist}: {input_track}")
 
-    # check to see if the artists are part of the same recording, otherwise we'll miss 'featured' artists etc
+    # check to see if the artists are part of the same recording, otherwise we'll miss 'featured'
+    # artists etc
     cross_validated_artist_recordings = {
         x: set(recordings_response_dict[x]["records"]) for x in cross_validated_artists
     }
@@ -146,7 +174,7 @@ def match_artists(input_artist, input_song):
     }
 
     n_matching_recordings = {
-        artist: len([k for k, v in recordings.items() if v == input_song.title()])
+        artist: len([k for k, v in recordings.items() if v == input_track.title()])
         for artist, recordings in all_artist_recordings.items()
     }
     return [
@@ -154,7 +182,10 @@ def match_artists(input_artist, input_song):
     ], "5_matching_recordings"
 
 
-def get_matched_artists(input_df):
+def get_matched_artists(input_df: pd.DataFrame) -> list:
+    """
+    Function to match artists and songs from an input df to musicbrainz ids
+    """
     matched_artists = pd.DataFrame()
     for i, (input_artist, input_song) in enumerate(
         zip(input_df["input_artist"], input_df["input_song_name"])
@@ -175,7 +206,10 @@ def get_matched_artists(input_df):
     return matched_artists
 
 
-def format_area(input_df):
+def format_area(input_df: pd.DataFrame) -> tuple(pd.DataFrame, pd.DataFrame):
+    """
+    Function to format the area column of the input dataframe
+    """
     artist_area_mapping = (
         pd.concat(
             [
@@ -197,11 +231,14 @@ def format_area(input_df):
         .dropna()
         .drop_duplicates()
         .sort_values(by=["area.type", "area.name"])
-        .reset_index(drop=True),
+        .reset_index(drop=True)
     )
 
 
-def format_artist_alias(input_df):
+def format_artist_alias(input_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Function to format the artist-alias column of the input dataframe
+    """
     return (
         pd.concat(
             [
@@ -217,7 +254,11 @@ def format_artist_alias(input_df):
     )
 
 
-def format_artists(input_df):
+def format_artists(input_df: pd.DataFrame) -> dict:
+    """
+    Function to format any information related to artists and return a dictionary of
+    relevant tables
+    """
     artist_area_mapping, area_metadata = format_area(input_df)
     artist_alias_mapping = format_artist_alias(
         input_df[["id", "alias-list"]].explode("alias-list").reset_index(drop=True)

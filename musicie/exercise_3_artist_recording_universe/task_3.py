@@ -1,10 +1,10 @@
 import logging
 from pathlib import Path
 import pathlib
-import pandas as pd
+import pickle
 import re
 
-import pickle
+import pandas as pd
 
 from musicie.exercise_3_artist_recording_universe.artist_recordings import (
     get_artist_recordings,

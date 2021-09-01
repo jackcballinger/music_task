@@ -2,6 +2,7 @@ import codecs
 from datetime import datetime
 from itertools import chain
 from pathlib import Path
+import pathlib
 
 from jinja2 import Template
 import pandas as pd
@@ -12,16 +13,18 @@ with codecs.open(Path(__file__).parent / "testing_template.html") as f:
 
 TEMPLATE = Template(template_code)
 
-
 class BasePDFValidator:
+    """
+    Class to validate input pdf
+    """
     def __init__(
         self,
-        config,
-        output_folder,
-        pdf_data,
-        page_table_numbers,
-        front_page_data,
-        no_pages,
+        config: dict,
+        output_folder: pathlib.Path,
+        pdf_data: list,
+        page_table_numbers: dict,
+        front_page_data: dict,
+        no_pages: int,
     ):
         self._config = config
         self._output_folder = output_folder
@@ -39,16 +42,17 @@ class BasePDFValidator:
             / "bootstrap.css",
         ]
 
-    def write_validation_data(self, input_validation_data, test_definitions):
+    def write_validation_data(self, input_validation_data: dict, test_definitions: dict) -> None:
+        """
+        Function to write the validation data to an output pdf as specified in the config
+        """
         document_result = all(
-            [
-                x["Result"] == "Pass"
-                for x in list(
-                    chain.from_iterable(
-                        chain.from_iterable(list(input_validation_data.values()))
-                    )
+            x["Result"] == "Pass"
+            for x in list(
+                chain.from_iterable(
+                    chain.from_iterable(list(input_validation_data.values()))
                 )
-            ]
+            )
         )
         failures = (
             list(
@@ -105,7 +109,10 @@ class BasePDFValidator:
         )
 
     @staticmethod
-    def format_whole_document_html(input_table):
+    def format_whole_document_html(input_table: list) -> str:
+        """
+        Function to format the whole document tests into html
+        """
         html_string = f"""{pd.DataFrame(input_table).to_html(
             index=False,
             col_space=50,
@@ -115,7 +122,10 @@ class BasePDFValidator:
         return html_string
 
     @staticmethod
-    def format_table_html(input_table):
+    def format_table_html(input_table: list) -> str:
+        """
+        Function to format the table tests into html
+        """
         input_table = input_table.rename_axis(None, axis=1).fillna("Not Applicable")
         html_string = f"""{input_table.to_html(
             index=False,
@@ -126,7 +136,10 @@ class BasePDFValidator:
         return html_string
 
     @staticmethod
-    def format_failure_dfs(input_failure_dfs):
+    def format_failure_dfs(input_failure_dfs: list) -> str:
+        """
+        Function to format the failure dataframes into html
+        """
         if not input_failure_dfs:
             return ""
         formatted_input_failure_dfs = [
@@ -135,7 +148,8 @@ class BasePDFValidator:
         ]
         failure_html_string = "".join(
             [
-                f"""<li><p><b>Table Name</b>: {table['table_name']}<p><b>Test Type</b>: {table['test_type']}<p><b>Test Calculation</b>: {table['calculation'].to_html(
+                f"""<li><p><b>Table Name</b>: {table['table_name']}<p><b>Test Type</b>:
+                {table['test_type']}<p><b>Test Calculation</b>: {table['calculation'].to_html(
             index=False,
             col_space=50,
             justify='left',
@@ -154,11 +168,18 @@ class BasePDFValidator:
         return failure_template.render()
 
     @staticmethod
-    def format_failure_strings(input_failure_strings):
+    def format_failure_strings(input_failure_strings: list):
+        """
+        Function to format the failure strings into html
+        """
         if not input_failure_strings:
             return ""
+        return ""
 
-    def format_failures(self, input_failure):
+    def format_failures(self, input_failure: list) -> str:
+        """
+        Function to format the failure dataframes and strings
+        """
         failure_dfs = self.format_failure_dfs(
             [
                 failure
@@ -175,5 +196,9 @@ class BasePDFValidator:
         )
         return failure_dfs + failure_strings
 
-    def validate_data(self):
+    @staticmethod
+    def validate_data():
+        """
+        Function to validate the data. Must be overridden
+        """
         raise NotImplementedError

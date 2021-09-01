@@ -1,15 +1,18 @@
-from collections import defaultdict
+from abc import abstractmethod
 import logging
 import re
 
-import numpy as np
 import pandas as pd
+from pandas.core.frame import DataFrame
 
 logging.basicConfig(level=logging.INFO)
 _LOGGER = logging.getLogger(__file__)
 
 
 class BasePDFFormatter:
+    """
+    Class to run any formatting specified in the config
+    """
     def __init__(self, config):
         self._config = config
         self._ignore_tables = self._config.get("ignore_tables", 0)
@@ -21,7 +24,7 @@ class BasePDFFormatter:
 
     def apply_table_formatting(self, input_df: pd.DataFrame, table_name: str) -> dict:
         """
-        Functionto apply any table formatting required, as set in the config
+        Function to apply any table formatting required, as set in the config
         """
         formatted_df = input_df.copy()
         _LOGGER.info("formatting pdf tables")
@@ -44,43 +47,72 @@ class BasePDFFormatter:
             "df": formatted_df.reset_index(drop=True),
         }
 
-    def enhance_table_data():
+    @abstractmethod
+    def enhance_table_data(self, page_data_list, enhance_table_data_config, prev_tables):
+        """
+        Function to add extra columns to any input table data. Must be overridden
+        """
         raise NotImplementedError
 
-    def format_pdf_data():
+    @abstractmethod
+    def format_pdf_data(self, input_page_data, input_page_table_numbers):
+        """
+        Function to format any data to be written to pdf. Must be overridden
+        """
         raise NotImplementedError
 
 
-def drop_first_rows(input_df, n):
+def drop_first_rows(input_df: pd.DataFrame, n: int) -> pd.DataFrame:
+    """
+    Function to drop the first n rows from an input dataframe
+    """
     return input_df[n:]
 
 
-def drop_last_rows(input_df, n):
+def drop_last_rows(input_df: pd.DataFrame, n: int) -> pd.DataFrame:
+    """
+    Function to drop the last n rows from an input dataframe
+    """
     return input_df[:-n]
 
 
-def replace_values(input_df, replace_config):
+def replace_values(input_df: pd.DataFrame, replace_config: dict) -> pd.DataFrame:
+    """
+    Function to replace any values as specified in the config
+    """
     for k, v in replace_config.items():
         if k != "cols":
             input_df = input_df.replace(k, v, regex=True)
     return input_df
 
 
-def col_types(input_df, type_mappings):
+def col_types(input_df: pd.DataFrame, type_mappings: dict) -> DataFrame:
+    """
+    Function to cast columns to specific types as specified in the config
+    """
     return input_df.astype(type_mappings)
 
 
-def fill_na_values(input_df, how):
+def fill_na_values(input_df: pd.DataFrame, how: dict) -> pd.DataFrame:
+    """
+    Function to fill any null values as specified in the config
+    """
     for col, method in how.items():
         input_df[col] = input_df[col].fillna(method=method)
     return input_df
 
 
-def query_df(input_df, query_string=None):
+def query_df(input_df: pd.DataFrame, query_string=None) -> pd.DataFrame:
+    """
+    Function to run a query on the an input dataframe as specified in the config
+    """
     return input_df.query(query_string, engine="python")
 
 
-def normalize_column_names(input_df):
+def normalize_column_names(input_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Function to normalze columns names to snake case
+    """
     input_df.columns = [
         re.sub("([a-z0-9])([A-Z])", r"\1_\2", col)
         .lower()
@@ -103,11 +135,18 @@ FUNC_DICT = {
 }
 
 
-def format_front_page(schema_type, front_page_text):
+def format_front_page(schema_type: str, front_page_text: str) -> dict:
+    """
+    Function to match the correct front page formatting function with the correct schema_type.
+    The function will then fun the formatting on the front page
+    """
     return front_page_parsing_dict[schema_type](front_page_text)
 
 
-def format_wc_music_corp(input_text):
+def format_wc_music_corp(input_text: str) -> dict:
+    """
+    Function to format the front page of pdfs from WC Music Corp.
+    """
     front_page_split = input_text.splitlines()
     front_page = front_page_split[:1] + front_page_split[5:]
 

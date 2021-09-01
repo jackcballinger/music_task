@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 _LOGGER = logging.getLogger(__file__)
 
 # Global variables
-with open(Path(__file__).parent / "config.yaml") as file:
+with open(Path(__file__).parent / "config.yaml", 'r', encoding='utf-8') as file:
     CONFIG = yaml.load(file, Loader=yaml.FullLoader)
 
 
@@ -48,7 +48,7 @@ def get_input_pdf_files(input_folder: str) -> list:
     Function to retrieve all pdf files in the input folder
     """
     input_folder = Path(input_folder)
-    return [x for x in Path(input_folder).glob("*.pdf")]
+    return list(Path(input_folder).glob("*.pdf"))
 
 
 def format_table(input_table_data: list) -> list:

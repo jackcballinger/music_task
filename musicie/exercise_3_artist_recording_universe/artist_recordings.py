@@ -13,7 +13,10 @@ musicbrainzngs.auth("test_application", "xqL4RTKh@7#9P4cG")
 musicbrainzngs.set_useragent("test_application", "0.1", "http://example.com/music")
 
 
-def browse_artist_recordings(input_artist_id, **kwargs):
+def browse_artist_recordings(input_artist_id: str, **kwargs) -> list:
+    """
+    Function to browse recordings given an input artist_id using the musicbrainszngs api
+    """
     no_recordings = musicbrainzngs.browse_recordings(artist=input_artist_id)[
         "recording-count"
     ]
@@ -31,7 +34,10 @@ def browse_artist_recordings(input_artist_id, **kwargs):
     return recordings
 
 
-def get_artist_recordings(artist_id_df):
+def get_artist_recordings(artist_id_df: pd.DataFrame) -> list:
+    """
+    Function to get recordings for each artist_id in an input dataframe
+    """
     artist_recordings = pd.DataFrame()
     for i, (artist_id, name) in enumerate(
         zip(artist_id_df["id"], artist_id_df["name"])
@@ -50,7 +56,12 @@ def get_artist_recordings(artist_id_df):
     return artist_recordings
 
 
-def format_artist_relations(input_df):
+def format_artist_relations(
+    input_df: pd.DataFrame,
+) -> tuple(pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    """
+    Function to format the artist-relation-list column of the input dataframe
+    """
     artist_relation_df = pd.concat(
         [
             input_df["id"],
@@ -77,7 +88,10 @@ def format_artist_relations(input_df):
     )
 
 
-def format_record_works(input_df):
+def format_record_works(input_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Function to format the work-relation-list column of the input dataframe
+    """
     record_work_relations = pd.concat(
         [
             input_df.reset_index(drop=True).drop(columns=["work-relation-list"]),
@@ -93,7 +107,12 @@ def format_record_works(input_df):
     )
 
 
-def format_record_label(input_df):
+def format_record_label(
+    input_df: pd.DataFrame,
+) -> tuple(pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    """
+    Function to format the label-relation-list of the input dataframe
+    """
     label_relation_df = pd.concat(
         [input_df["id"], pd.json_normalize(input_df["label-relation-list"])], axis=1
     )
@@ -111,7 +130,11 @@ def format_record_label(input_df):
     )
 
 
-def format_artist_recordings(input_df):
+def format_artist_recordings(input_df: pd.DataFrame) -> dict:
+    """
+    Function to format any information related to recordings and return a dictionary of
+    relevant tables
+    """
     (
         record_artist_mapping,
         record_creator_mapping,

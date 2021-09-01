@@ -7,19 +7,31 @@ musicbrainzngs.auth("test_application", "xqL4RTKh@7#9P4cG")
 musicbrainzngs.set_useragent("test_application", "0.1", "http://example.com/music")
 
 
-def get_work(work_id):
+def get_work(work_id: str) -> dict:
+    """
+    Function to get works given an input artist_id using the musicbrainszngs api
+    """
     return musicbrainzngs.get_work_by_id(work_id, includes=["artist-rels"])
 
 
-def get_work_ids(input_df):
+def get_work_ids(input_df: pd.DataFrame) -> list:
+    """
+    Function to return a list of unique work ids given a dataframe containing work ids
+    """
     return list(set(input_df["id"]))
 
 
-def get_works(input_df):
+def get_works(input_df: pd.DataFrame) -> dict:
+    """
+    Function to get the corresponding works for a list of work ids
+    """
     return {work_id: get_work(work_id) for work_id in get_work_ids(input_df)}
 
 
-def format_work_attributes(input_df):
+def format_work_attributes(input_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Function to format the attribute-list of the input dataframe
+    """
     return (
         pd.concat(
             [
@@ -35,17 +47,24 @@ def format_work_attributes(input_df):
     )
 
 
-def format_work_creators(input_df):
+def format_work_creators(input_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Function to format the work creators dataframe
+    """
     return (
         input_df[["id", "artist.id", "artist.role-id"]].dropna().reset_index(drop=True),
         input_df[["artist.role-id", "artist.role"]]
         .dropna()
         .drop_duplicates()
-        .reset_index(drop=True),
+        .reset_index(drop=True)
     )
 
 
-def format_works(input_works):
+def format_works(input_works: dict) -> dict:
+    """
+    Function to format any information related to works and return a dictionary of
+    relevant tables
+    """
     works_df = (
         pd.DataFrame([work["work"] for work in input_works.values()])
         .explode("artist-relation-list")

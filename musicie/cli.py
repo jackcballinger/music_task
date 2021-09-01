@@ -6,6 +6,9 @@ from musicie.exercise_3_artist_recording_universe import task_3
 
 
 def argument_parser():
+    """
+    Function to parse input cli arguments
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--exercise_number",
@@ -33,7 +36,8 @@ def argument_parser():
         type=str,
         required=False,
         default=None,
-        help="Location of a postgres_config.yaml file. If specified, code will alltempt to write to sql.",
+        help="""Location of a postgres_config.yaml file.
+        If specified, code will alltempt to write to sql.""",
     )
     parser.add_argument(
         "--output_folder_location",
@@ -58,7 +62,6 @@ def cli():
         args.write_mode,
         args.postgres_yaml,
     )
-
 
 exercise_dict = {1: task_1, 3: task_3}
 
