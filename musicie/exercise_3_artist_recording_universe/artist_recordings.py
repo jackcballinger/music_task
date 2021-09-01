@@ -78,7 +78,7 @@ def format_artist_recordings(input_df):
     record_work_mapping = format_record_works(input_df[['id','work-relation-list']].explode('work-relation-list'))
     record_label_mapping, label_metadata, label_type_mapping = format_record_label(input_df[['id','label-relation-list']].explode('label-relation-list').dropna().reset_index(drop=True))
     return {
-        'DimRecord': input_df[['id','title','disambiguation','artist_id','video']],
+        'DimRecord': input_df[['id','title','disambiguation','video']],
         'DimLabel': label_metadata,
         'DimLabelType': label_type_mapping,
         'DimRecordCreatorType': record_creator_role_mapping,

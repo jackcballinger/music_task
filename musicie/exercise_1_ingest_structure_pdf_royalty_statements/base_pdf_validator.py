@@ -13,8 +13,9 @@ with codecs.open(Path(__file__).parent / 'testing_template.html') as f:
 TEMPLATE = Template(template_code)
 
 class BasePDFValidator:
-    def __init__(self, config, pdf_data, page_table_numbers, front_page_data, no_pages):
+    def __init__(self, config, output_folder, pdf_data, page_table_numbers, front_page_data, no_pages):
         self._config = config
+        self._output_folder = output_folder
         self._table_config = self._config['tables']
         self._pdf_data = pdf_data
         self._page_table_numbers = page_table_numbers
@@ -42,7 +43,7 @@ class BasePDFValidator:
         html_out = self._template.render(template_vars)
         pdfkit.from_string(
             html_out,
-            self._config['report_output_name'],
+            self._output_folder / self._config['report_output_name'],
             configuration=pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'),
             css=self._css_files
          )

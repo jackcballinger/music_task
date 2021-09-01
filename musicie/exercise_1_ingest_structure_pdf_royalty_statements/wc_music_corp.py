@@ -16,8 +16,8 @@ logging.getLogger('pdfminer').setLevel(logging.WARNING)
 _LOGGER = logging.getLogger(__file__)
 
 class WcMusicCorpValidator(BasePDFValidator):
-    def __init__(self, config, pdf_data, page_table_numbers, front_page_data, no_pages):
-        super().__init__(config, pdf_data, page_table_numbers, front_page_data, no_pages)
+    def __init__(self, config, output_folder, pdf_data, page_table_numbers, front_page_data, no_pages):
+        super().__init__(config, output_folder, pdf_data, page_table_numbers, front_page_data, no_pages)
     
         self._test_definitions = [
             {'test_name':'Number of Pages', 'test_description': 'Document test to check that the number of pages parsed is equal to the number of pages in the document'},

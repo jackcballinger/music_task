@@ -123,7 +123,7 @@ def format_area(input_df):
             input_df['id'],
             pd.json_normalize(input_df['area']).drop(columns=['sort-name','life-span.ended']).rename(columns={'id':'area.id', 'type':'area.type','name':'area.name'})
         ], axis=1
-    )
+    ).dropna().reset_index(drop=True)
     return (
         artist_area_mapping,
         artist_area_mapping[['area.id','area.type','area.name']].dropna().drop_duplicates().sort_values(by=['area.type','area.name']).reset_index(drop=True)
@@ -135,7 +135,7 @@ def format_artist_alias(input_df):
             input_df['id'],
             pd.json_normalize(input_df['alias-list']).drop(columns=['sort-name']).rename(columns={'alias':'name'})
         ], axis=1
-    )
+    ).dropna().reset_index(drop=True)
 
 def format_artists(input_df):
     artist_area_mapping, area_metadata = format_area(input_df)
@@ -146,7 +146,7 @@ def format_artists(input_df):
         'MappingArtistArea': artist_area_mapping,
         'MappingArtistAlias': artist_alias_mapping,
         'MappingArtistIsni': input_df[['id','isni-list']].explode('isni-list').reset_index(drop=True).rename(columns={'isni-list':'isni.value'}),
-        'MappingArtistIpi': input_df[['id','ipi-list']].explode('ipi-list').reset_index(drop=True).rename(columns={'ipi-list':'ipi.value'}),
+        'MappingArtistIpi': input_df[['id','ipi-list']].explode('ipi-list').dropna().reset_index(drop=True).rename(columns={'ipi-list':'ipi.value'}),
         'MappingInputtrackInputartist': input_df[['input_song','input_artist','name','id']].rename(columns={'input_song':'track', 'input_artist': 'artist'})
     }
 

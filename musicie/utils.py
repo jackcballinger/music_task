@@ -1,6 +1,7 @@
 from datetime import datetime as dt
 import json
 import os
+from pathlib import Path
 
 import boto3
 import pandas as pd
@@ -22,6 +23,13 @@ def write_dataframe_to_sql(df, table_name, cols=None, **kwargs):
         df[cols].assign(datestamp=dt.utcnow()).to_sql(table_name, engine, **kwargs)
     else:
         df.assign(datestamp=dt.utcnow()).to_sql(table_name, engine, **kwargs)
+
+def write_dataframe_to_csv(input_df, df_name, output_folder, cols=None, **kwargs):
+    output_folder.mkdir(parents=True, exist_ok=True)
+    if cols is not None:
+        input_df[cols].assign(datestamp=dt.utcnow()).to_csv(output_folder / (df_name + '.csv'), **kwargs)
+    else:
+        input_df.assign(datestamp=dt.utcnow()).to_csv(output_folder / (df_name + '.csv'), encoding='utf-8-sig', **kwargs)
 
 def read_data_from_sql(table, cols):
     sql_query = f"""
@@ -53,3 +61,7 @@ def get_s3_key(state, dataset_name, file_type):
 def write_data_to_sql(input_formatted_tables, **kwargs):
     for formatted_table_name, formatted_table in input_formatted_tables.items():
         write_dataframe_to_sql(formatted_table, formatted_table_name, **kwargs)
+
+def write_data_to_csv(input_data_tables, output_folder, **kwargs):
+    for df_name, df in input_data_tables.items():
+        write_dataframe_to_csv(df, df_name, output_folder, **kwargs)
