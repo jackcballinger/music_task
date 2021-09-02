@@ -174,7 +174,25 @@ class BasePDFValidator:
         """
         if not input_failure_strings:
             return ""
-        return ""
+        formatted_input_failure_dfs = [
+            {k.lower().replace(" ", "_"): v for k, v in x.items()}
+            for x in input_failure_strings
+        ]            
+        failure_html_string = "".join(
+            [
+                f"""<li><p><b>Table Name</b>: Whole Document<p><b>Test Type</b>:
+                {string_failure['test_type']}<p><b>Test Calculation</b>: {string_failure['calculation']}</li>"""
+                for string_failure in formatted_input_failure_dfs
+            ]
+        )
+        failure_template = Template(
+            f"""<div>
+                        <ul>
+                        {failure_html_string}
+                        </ul>
+                    </div>"""
+        )
+        return failure_template.render()
 
     def format_failures(self, input_failure: list) -> str:
         """
@@ -194,7 +212,7 @@ class BasePDFValidator:
                 if isinstance(failure["Calculation"], str)
             ]
         )
-        return failure_dfs + failure_strings
+        return failure_strings + failure_dfs
 
     @staticmethod
     def validate_data():

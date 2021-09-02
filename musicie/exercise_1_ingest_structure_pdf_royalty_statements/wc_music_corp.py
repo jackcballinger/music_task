@@ -45,31 +45,27 @@ class WcMusicCorpValidator(BasePDFValidator):
         self._test_definitions = [
             {
                 "test_name": "Number of Pages",
-                "test_description": (
+                "test_description": 
                     "Document test to check that the number of pages parsed is equal to the number"
                     "of pages in the document"
-                ),
             },
             {
                 "test_name": "Amount Due",
-                "test_description": (
+                "test_description": 
                     "Table test to check that the amounts due in the various tables tally up with"
                     "the amount on the front page",
-                )
             },
             {
                 "test_name": "Scope Sum",
-                "test_description": (
+                "test_description": 
                     "Table test to check that the amounts paid in the Scope Summary table tally up"
                     "with those in the Music Royalties table",
-                )
             },
             {
                 "test_name": "Track Sum",
-                "test_description": (
+                "test_description": 
                     "Table test to check that the amounts received in the Music Royalties tables"
                     "corresponding to each song tally with those stated in the document"
-                ),
             },
         ]
 

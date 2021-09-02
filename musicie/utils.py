@@ -88,7 +88,7 @@ def write_dataframe_to_csv(
         )
     else:
         input_df.assign(Datestamp=dt.utcnow()).to_csv(
-            output_folder / (df_name + ".csv"), encoding="utf-8-sig", **kwargs
+            output_folder / (df_name + ".csv"), **kwargs
         )
 
 

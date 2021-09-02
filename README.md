@@ -56,6 +56,13 @@ Each of these steps has a base class containing all of the functions that can be
 
 The pdf_reader classes output data to be formatted, the pdf_formatted classes output data to be validated, and the pdf_validator classes output a test report to the specified output location, running tests specified in the config
 
+Validation tests:
+- In order to test that the whole pdf has been parsed, we test the total number of pages pulled from a simple .num_pages() check on the document with the total number of pages from which data has been pulled
+- In order to test underlying data quality, we test a number of things, including:
+  - the amount due columns in the sub tables tally up with the stated amount due on the front page
+  - the amount paid in the scope summary tables is correcty represented by the data in the music royalties table
+  - the amount received per track as stated in the headers of the music royalties tables tally up with the data obtained from the tables themselves
+
 ### **Exercise 3**
 The code for exercise 3 is also essentially made up of three parts:
 - matching artist and track_names to artist entities in the musicbrainz ecosystem

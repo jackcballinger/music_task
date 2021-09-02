@@ -61,12 +61,12 @@ def format_table(input_table_data: list) -> list:
     return input_table_data
 
 
-def format_tables_for_download(pdf_id: str, pdf_data: dict) -> dict:
+def format_tables_for_download(pdf_id: str, pdf_data: dict, file_in_name=False) -> dict:
     """
     Function for preparing data for writing to sql
     """
     return {
-        "".join([x.title() for x in table_name.split("_")]): format_table(
+        pdf_id + '/' + "".join([x.title() for x in table_name.split("_")]) if file_in_name else "".join([x.title() for x in table_name.split("_")]): format_table(
             table_data
         ).assign(UniqueId=pdf_id)
         for table_name, table_data in pdf_data.items()
@@ -121,7 +121,7 @@ def run_exercise(
             )
             if aws_config is not None:
                 write_data_to_s3(
-                    format_tables_for_download(pdf_file_id, pdf_table_data),
+                    format_tables_for_download(pdf_file_id, pdf_table_data, file_in_name=True),
                     index=False,
                     encoding='utf-8-sig'
                 )
