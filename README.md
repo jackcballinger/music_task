@@ -75,7 +75,7 @@ The outputs for this exercise are as follows:
 
 ### **Exercise 2**
 The outputs for this exercise are as follows:
-- A [few slides](outputs/exercise_2_standardise_royalty_statements/workflow_design.pptx) on the ideal workflow design
+- A [few slides](outputs/exercise_2_standardise_royalty_statements/workflow_design.pdf) on the ideal workflow design
 - An [image](outputs/exercise_2_standardise_royalty_statements/royalty_statement_workflow_process.jpeg) of the proposed royalty statement workflow design
 
 ### **Exercise 3**
@@ -87,7 +87,7 @@ The outputs for this exercise are as follows:
 
 ### **Exercise 4**
 The outputs for this exercise are as follows:
-- A [few slides](outputs/exercise_4_structure_database/database_schema.pptx) on the database structure
+- A [few slides](outputs/exercise_4_structure_database/database_schema.pdf) on the database structure
 - The [database_schema image](outputs/exercise_4_structure_database/database_schema.png) containing information regarding how the database is structured
 - The [database_schema_code sql script](outputs/exercise_4_structure_database/database_schema_code.sql) containing the code used to create the tables in the database_schema
 
