@@ -105,7 +105,7 @@ def get_artist_recordings(artist_id: str, **kwargs) -> dict:
     }
 
 
-def match_artists(input_artist: str, input_track: str) -> tuple(list, str):
+def match_artists(input_artist: str, input_track: str) -> tuple:
     """
     Function that attempts to match input artists and tracks to an artist in the
     musicbrainz ecosystem
@@ -206,7 +206,7 @@ def get_matched_artists(input_df: pd.DataFrame) -> list:
     return matched_artists
 
 
-def format_area(input_df: pd.DataFrame) -> tuple(pd.DataFrame, pd.DataFrame):
+def format_area(input_df: pd.DataFrame) -> tuple:
     """
     Function to format the area column of the input dataframe
     """
@@ -249,7 +249,7 @@ def format_artist_alias(input_df: pd.DataFrame) -> pd.DataFrame:
             ],
             axis=1,
         )
-        .dropna()
+        .dropna(subset=['name'])
         .reset_index(drop=True)
     )
 
@@ -283,7 +283,7 @@ def format_artists(input_df: pd.DataFrame) -> dict:
         .dropna()
         .reset_index(drop=True)
         .rename(columns={"ipi-list": "ipi.value"}),
-        "MappingInputtrackInputartist": input_df[
-            ["input_song", "input_artist", "name", "id"]
+        "MappingInputartistInputtrack": input_df[
+            ["input_artist","input_song", "id"]
         ].rename(columns={"input_song": "track", "input_artist": "artist"}),
     }

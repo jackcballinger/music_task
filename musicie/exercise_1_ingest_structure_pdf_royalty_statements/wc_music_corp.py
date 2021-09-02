@@ -133,8 +133,7 @@ class WcMusicCorpValidator(BasePDFValidator):
             else "Fail",
         }
 
-    @staticmethod
-    def validate_track_sum(table_data: pd.DataFrame, table_name: str, *args) -> dict: #pylint:disable=unused-argument
+    def validate_track_sum(self, table_data: pd.DataFrame, table_name: str, *args) -> dict: #pylint:disable=unused-argument
         """
         Function to validate the amount received sums as described in the headers of the
         music_royalites table
@@ -203,6 +202,7 @@ class WcMusicCorpValidator(BasePDFValidator):
         ]
 
     def validate_data(self) -> None:
+        _LOGGER.info('validating data')
         tests_result = defaultdict(list)
         for table_name, table in self._pdf_data.items():
             table_funcs = {
@@ -223,6 +223,7 @@ class WcMusicCorpFormatter(BasePDFFormatter):
         """
         Function to format the input pdf tables
         """
+        _LOGGER.info('formatting pdf')
         enhanced_tables_dict = self.match_correct_tables(
             input_page_data, input_page_table_numbers
         )

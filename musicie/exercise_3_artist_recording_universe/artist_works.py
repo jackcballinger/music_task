@@ -1,4 +1,5 @@
 import pandas as pd
+from tqdm import tqdm
 
 import musicbrainzngs
 
@@ -18,14 +19,14 @@ def get_work_ids(input_df: pd.DataFrame) -> list:
     """
     Function to return a list of unique work ids given a dataframe containing work ids
     """
-    return list(set(input_df["id"]))
+    return list(set(input_df["work.id"]))
 
 
 def get_works(input_df: pd.DataFrame) -> dict:
     """
     Function to get the corresponding works for a list of work ids
     """
-    return {work_id: get_work(work_id) for work_id in get_work_ids(input_df)}
+    return {work_id: get_work(work_id) for work_id in tqdm(get_work_ids(input_df))}
 
 
 def format_work_attributes(input_df: pd.DataFrame) -> pd.DataFrame:

@@ -37,7 +37,15 @@ def argument_parser():
         required=False,
         default=None,
         help="""Location of a postgres_config.yaml file.
-        If specified, code will alltempt to write to sql.""",
+        If specified, code will atempt to write to sql.""",
+    )
+    parser.add_argument(
+        "--aws_config",
+        type=str,
+        required=False,
+        default=None,
+        help="""Location of a .aws/config file.
+        If specified, code will attempt to write to s3.""",
     )
     parser.add_argument(
         "--output_folder_location",

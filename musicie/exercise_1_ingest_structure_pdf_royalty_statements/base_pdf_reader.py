@@ -62,6 +62,7 @@ class BasePDFReader:
         """
         Function to get all data corresponding to each page of the input document
         """
+        _LOGGER.info('obtaining pdf page data')
         pdf = PdfFileReader(open(self._pdf_path, "rb"))
         no_pages = pdf.getNumPages()
         return (
@@ -95,7 +96,7 @@ def extract_front_page_text(input_pdf: pd.DataFrame) -> str:
         return f.pages[0].extract_text()
 
 
-def determine_document_schema_type(input_pdf_path: pathlib.Path) -> tuple(str, dict):
+def determine_document_schema_type(input_pdf_path: pathlib.Path) -> tuple:
     """
     Function to return the correct schema type of the document, as well as the front page data
     """

@@ -1,5 +1,7 @@
 from datetime import datetime as dt
+from io import StringIO
 import json
+import logging
 import os
 import pathlib
 
@@ -7,6 +9,9 @@ import boto3
 import pandas as pd
 import sqlalchemy
 import yaml
+
+logging.basicConfig(level=logging.INFO)
+_LOGGER = logging.getLogger(__file__)
 
 with open(r"postgres_config.yaml", "r", encoding="utf-8") as file:
     creds = yaml.load(file, Loader=yaml.FullLoader)
@@ -22,17 +27,19 @@ def list_of_dicts_to_dict(input_list_of_dicts: list) -> dict:
     return dict((key, d[key]) for d in input_list_of_dicts for key in d)
 
 def write_object_to_s3(
-    input_df: pd.DataFrame, state: str, dataset_name: str, file_type: str
+    input_df: pd.DataFrame, state: str, dataset_name: str, file_type: str, **kwargs
 ) -> None:
     """
     Function to write an input object to the correct location in S3
     """
     s3 = boto3.client("s3")
     key = get_s3_key(state, dataset_name, file_type)
+    csv_buffer = StringIO()
+    input_df.to_csv(csv_buffer, **kwargs)
     s3.put_object(
         Bucket="music-task",
         Key=key,
-        Body=json.dumps(input_df.to_dict(orient="records")),
+        Body=csv_buffer.getvalue(),
     )
 
 
@@ -59,9 +66,9 @@ def write_dataframe_to_sql(
     Function to write an input dataframe to a configured sql database
     """
     if cols is not None:
-        df[cols].assign(datestamp=dt.utcnow()).to_sql(table_name, engine, **kwargs)
+        df[cols].assign(Datestamp=dt.utcnow()).to_sql(table_name, engine, **kwargs)
     else:
-        df.assign(datestamp=dt.utcnow()).to_sql(table_name, engine, **kwargs)
+        df.assign(Datestamp=dt.utcnow()).to_sql(table_name, engine, **kwargs)
 
 
 def write_dataframe_to_csv(
@@ -76,11 +83,11 @@ def write_dataframe_to_csv(
     """
     output_folder.mkdir(parents=True, exist_ok=True)
     if cols is not None:
-        input_df[cols].assign(datestamp=dt.utcnow()).to_csv(
+        input_df[cols].assign(Datestamp=dt.utcnow()).to_csv(
             output_folder / (df_name + ".csv"), **kwargs
         )
     else:
-        input_df.assign(datestamp=dt.utcnow()).to_csv(
+        input_df.assign(Datestamp=dt.utcnow()).to_csv(
             output_folder / (df_name + ".csv"), encoding="utf-8-sig", **kwargs
         )
 
@@ -107,13 +114,19 @@ def write_data_to_sql(input_formatted_tables: dict, **kwargs) -> None:
     """
     Function to iterate through input tables and write data to sql
     """
+    _LOGGER.info(f"writing data to sql database")
     for formatted_table_name, formatted_table in input_formatted_tables.items():
         write_dataframe_to_sql(formatted_table, formatted_table_name, **kwargs)
 
 
-def write_data_to_csv(input_data_tables: dict, output_folder: pathlib.Path, **kwargs):
+def write_data_to_csv(input_data_tables: dict, output_folder: pathlib.Path, **kwargs) -> None:
     """
     Function to iterate through input tables and write data to csv files
     """
+    _LOGGER.info(f"writing data to csv in location {output_folder}")
     for df_name, df in input_data_tables.items():
         write_dataframe_to_csv(df, df_name, output_folder, **kwargs)
+
+def write_data_to_s3(input_data_tables: dict, **kwargs) -> None:
+    for df_name, df in input_data_tables.items():
+        write_object_to_s3(df, 'trans', df_name, 'csv', **kwargs)

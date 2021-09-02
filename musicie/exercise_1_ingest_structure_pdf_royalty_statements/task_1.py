@@ -8,7 +8,7 @@ import yaml
 from musicie.exercise_1_ingest_structure_pdf_royalty_statements.base_pdf_reader import (
     determine_document_schema_type,
 )
-from musicie.utils import write_data_to_sql, write_data_to_csv
+from musicie.utils import write_data_to_sql, write_data_to_csv, write_data_to_s3
 
 # logging
 logging.basicConfig(level=logging.INFO)
@@ -61,7 +61,7 @@ def format_table(input_table_data: list) -> list:
     return input_table_data
 
 
-def format_tables_for_sql(pdf_id: str, pdf_data: dict) -> dict:
+def format_tables_for_download(pdf_id: str, pdf_data: dict) -> dict:
     """
     Function for preparing data for writing to sql
     """
@@ -78,6 +78,7 @@ def run_exercise(
     output_folder: str,
     write_mode=False,
     database_config=None,
+    aws_config=None
 ) -> None:
     """
     Function to run the code for the exercise
@@ -116,11 +117,18 @@ def run_exercise(
                 pdf_table_data,
                 Path(output_folder) / Path(__file__).parent.name / pdf_file_id,
                 index=False,
+                encoding='utf-8-sig'
             )
+            if aws_config is not None:
+                write_data_to_s3(
+                    format_tables_for_download(pdf_file_id, pdf_table_data),
+                    index=False,
+                    encoding='utf-8-sig'
+                )
             if database_config is not None:
                 # write data to sql
                 write_data_to_sql(
-                    format_tables_for_sql(pdf_file_id, pdf_table_data),
+                    format_tables_for_download(pdf_file_id, pdf_table_data),
                     if_exists="replace",
                     index=False,
                 )
